@@ -225,11 +225,13 @@ class PythonLanguageServer(MethodDispatcher):
     @_utils.debounce(LINT_DEBOUNCE_S, keyed_by='doc_uri')
     def lint(self, doc_uri, is_saved):
         # Since we're debounced, the document may no longer be open
-        if doc_uri in self.workspace.documents:
-            self.workspace.publish_diagnostics(
-                doc_uri,
-                flatten(self._hook('pyls_lint', doc_uri, is_saved=is_saved))
-            )
+        # if doc_uri in self.workspace.documents:
+        #     self.workspace.publish_diagnostics(
+        #         doc_uri,
+        #         flatten(self._hook('pyls_lint', doc_uri, is_saved=is_saved))
+        #     )
+        # Disable per-document linting because results override project-wide linting.
+        pass
 
     def references(self, doc_uri, position, exclude_declaration):
         return flatten(self._hook(
