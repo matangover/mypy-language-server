@@ -8,6 +8,7 @@ import pyls.uris
 from mypy.dmypy_server import Server
 from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.options import Options
+from typing import Set
 
 from pyls import hookimpl, lsp
 from threading import Thread
@@ -78,10 +79,19 @@ def parse_mypy_output(mypy_output):
     return diagnostics
 
 
+documents_with_diagnostics: Set[str] = set()
+
 def publish_diagnostics(workspace, mypy_output):
     diagnostics_by_path = parse_mypy_output(mypy_output)
+    previous_documents_with_diagnostics = documents_with_diagnostics.copy()
+    documents_with_diagnostics.clear()
     for path, diagnostics in diagnostics_by_path.items():
         uri = pyls.uris.from_fs_path(os.path.join(workspace.root_path, path))
+        documents_with_diagnostics.add(uri)
         # TODO: If mypy is really fast, it may finish before initialization is complete,
         #       and this call will have no effect. (?)
         workspace.publish_diagnostics(uri, diagnostics)
+
+    documents_to_clear = previous_documents_with_diagnostics - documents_with_diagnostics
+    for uri in documents_to_clear:
+        workspace.publish_diagnostics(uri, [])
