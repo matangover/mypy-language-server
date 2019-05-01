@@ -1,9 +1,7 @@
 # Copyright 2017 Palantir Technologies, Inc.
-import contextlib
 import logging
 import os
 import re
-import sys
 from collections import defaultdict
 import pyls.uris
 
@@ -20,16 +18,18 @@ log = logging.getLogger(__name__)
 
 @hookimpl
 def pyls_initialize(config, workspace):
+    options = Options()
+    options.show_column_numbers = True
+    options.follow_imports = 'error'
+    workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
+
     thread = Thread(target=mypy_check, args=(workspace, ))
     thread.start()
 
 def mypy_check(workspace):
-    options = Options()
-    options.show_column_numbers = True
-    workspace.dmypy = Server(options, DEFAULT_STATUS_FILE)
     log.info('Checking mypy...')
     try:
-        result = workspace.dmypy.cmd_check([workspace.root_path])
+        result = workspace.mypy_server.cmd_check([workspace.root_path])
         log.info(f'mypy done, exit code {result["status"]}')
         if result['err']:
             log.info(f'mypy stderr:\n{result["err"]}')
@@ -82,4 +82,6 @@ def publish_diagnostics(workspace, mypy_output):
     diagnostics_by_path = parse_mypy_output(mypy_output)
     for path, diagnostics in diagnostics_by_path.items():
         uri = pyls.uris.from_fs_path(os.path.join(workspace.root_path, path))
+        # TODO: If mypy is really fast, it may finish before initialization is complete,
+        #       and this call will have no effect. (?)
         workspace.publish_diagnostics(uri, diagnostics)
