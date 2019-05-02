@@ -22,6 +22,7 @@ def pyls_initialize(config, workspace):
     options = Options()
     options.show_column_numbers = True
     options.follow_imports = 'error'
+    options.check_untyped_defs = True
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
 
     thread = Thread(target=mypy_check, args=(workspace, ))
