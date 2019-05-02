@@ -53,9 +53,8 @@ def parse_line(line):
     path, lineno, offset, severity, msg = result.groups()
     lineno = int(lineno or 1)
     offset = int(offset or 0)
-    errno = 2
-    if severity == 'error':
-        errno = 1
+
+    errno = lsp.DiagnosticSeverity.Error if severity == 'error' else lsp.DiagnosticSeverity.Information
     diag = {
         'source': 'mypy',
         'range': {
