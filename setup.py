@@ -78,7 +78,7 @@ setup(
             'autopep8 = pyls.plugins.autopep8_format',
             'jedi_completion = pyls.plugins.jedi_completion',
             # 'jedi_definition = pyls.plugins.definition',
-            'jedi_hover = pyls.plugins.hover',
+            # 'jedi_hover = pyls.plugins.hover',
             'jedi_highlight = pyls.plugins.highlight',
             'jedi_references = pyls.plugins.references',
             'jedi_signature_help = pyls.plugins.signature',
@@ -94,6 +94,7 @@ setup(
             'yapf = pyls.plugins.yapf_format',
             'mypy_server = pyls.plugins.mypy_server',
             'mypy_definition = pyls.plugins.mypy_definition',
+            'mypy_hover = pyls.plugins.mypy_hover',
         ]
     },
 )
