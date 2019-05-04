@@ -5,13 +5,14 @@ from mypy.suggestions import SuggestionEngine, get_definition
 from mypy.nodes import (
     FuncDef, MypyFile, SymbolTable,
     SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
-    AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr
+    AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr, Import
 )
 from typing import Optional
 from mypy.types import (
     Type, AnyType, TypeOfAny, CallableType, UnionType, NoneTyp, Instance, is_optional,
 )
 from mypy.util import short_type
+from .mypy_definition import get_import_definition
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ def get_hover(engine, path, line, column) -> Optional[str]:
         def_node = node.type
     elif isinstance(node, MemberExpr):
         def_node = get_definition(node, engine.manager.all_types)
+    elif isinstance(node, Import):
+        def_node = get_import_definition(node, mypy_file, line, column, path)
     else:
         log.info(f'Unknown expression: {short_type(node)}')
         return None
