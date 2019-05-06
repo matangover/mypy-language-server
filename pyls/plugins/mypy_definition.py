@@ -98,7 +98,11 @@ def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line:
     module_name, name = find_import_name(import_node, line_relative_to_import, column_relative_to_import, suite, mypy_file)
     if not module_name:
         return None
-    return manager.modules[module_name]
+    module = manager.modules[module_name]
+    if name:
+        return module.names[name].node # TODO: return file too
+    else:
+        return module
 
 def find_import_name(import_node, line, column, suite, mypy_file: MypyFile):
     assert suite[0] == symbol.file_input
@@ -137,7 +141,27 @@ def find_import_name(import_node, line, column, suite, mypy_file: MypyFile):
                     if ok:
                         return import_id, None
     elif isinstance(import_node, ImportFrom):
-        pass
+        import_from = import_stmt[1]
+        assert import_from[0] == symbol.import_from
+        import_as_names = None
+        for element in import_from[2:]:
+            if element[0] == symbol.dotted_name:
+                name = get_dotted_name_at_position(element, line, column)
+                if name:
+                    import_id, ok = correct_relative_import(
+                        mypy_file.fullname(), import_node.relative, name, mypy_file.is_package_init_file())
+                    if ok:
+                        return import_id, None
+            elif element[0] == symbol.import_as_names:
+                for import_as_name in element[1:]:
+                    if import_as_name[0] == symbol.import_as_name:
+                        name = import_as_name[1]
+                        assert name[0] == token.NAME
+                        if token_contains_offset(name[2], name[3], len(name[1]), line, column):
+                            import_id, ok = correct_relative_import(
+                                mypy_file.fullname(), import_node.relative, import_node.id, mypy_file.is_package_init_file())
+                            if ok:
+                                return import_id, name[1]
 
     return None, None
 
