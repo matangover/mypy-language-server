@@ -2,7 +2,7 @@
 import logging
 from pyls import hookimpl, uris
 from mypy.suggestions import SuggestionEngine, get_definition
-from mypy.util import short_type
+from mypy.util import short_type, correct_relative_import
 
 from mypy.nodes import (
     FuncDef, MypyFile, SymbolTable,
@@ -95,12 +95,12 @@ def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line:
     column_relative_to_import = column
     if line == import_node.line:
         column_relative_to_import -= import_node.column
-    module_name, name = find_import_name(import_node, line_relative_to_import, column_relative_to_import, suite)
+    module_name, name = find_import_name(import_node, line_relative_to_import, column_relative_to_import, suite, mypy_file)
     if not module_name:
         return None
     return manager.modules[module_name]
 
-def find_import_name(import_node, line, column, suite):
+def find_import_name(import_node, line, column, suite, mypy_file: MypyFile):
     assert suite[0] == symbol.file_input
     stmt = suite[1]
     assert stmt[0] == symbol.stmt
@@ -125,25 +125,17 @@ def find_import_name(import_node, line, column, suite):
     elif isinstance(import_node, ImportAll):
         import_from = import_stmt[1]
         assert import_from[0] == symbol.import_from
-        leading_dots = ''
-        contained_in_leading_dots = False
         for element in import_from[2:]:
             if element[0] == token.NAME and element[1] == 'import':
                 break
-            if element[0] in (token.DOT, token.ELLIPSIS):
-                leading_dots += element[1]
-                if not contained_in_leading_dots:
-                    contained_in_leading_dots = token_contains_offset(element[2], element[3], len(element[1]), line, column)
+
             elif element[0] == symbol.dotted_name:
-                if contained_in_leading_dots:
-                    name_token = element[1]
-                    assert name_token[0] == token.NAME
-                    first_name = name_token[1]
-                    return leading_dots + first_name, None
-                else:
-                    dotted_name = get_dotted_name_at_position(element, line, column)
-                    if dotted_name:
-                        return leading_dots + dotted_name, None
+                name = get_dotted_name_at_position(element, line, column)
+                if name:
+                    import_id, ok = correct_relative_import(
+                        mypy_file.fullname(), import_node.relative, name, mypy_file.is_package_init_file())
+                    if ok:
+                        return import_id, None
     elif isinstance(import_node, ImportFrom):
         pass
 
