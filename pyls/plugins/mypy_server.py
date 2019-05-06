@@ -30,6 +30,7 @@ def pyls_initialize(config, workspace):
 
 def mypy_check(workspace):
     log.info('Checking mypy...')
+    workspace.report_progress('$(gear~spin) mypy')
     try:
         result = workspace.mypy_server.cmd_check([workspace.root_path])
         log.info(f'mypy done, exit code {result["status"]}')
@@ -42,6 +43,8 @@ def mypy_check(workspace):
         log.exception('Error in mypy check:')
     except SystemExit:
         log.exception('Oopsy, mypy tried to exit.')
+    finally:
+        workspace.report_progress(None)
 
 
 def parse_line(line):

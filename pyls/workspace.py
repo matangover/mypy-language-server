@@ -20,6 +20,7 @@ class Workspace(object):
     M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
     M_APPLY_EDIT = 'workspace/applyEdit'
     M_SHOW_MESSAGE = 'window/showMessage'
+    M_REPORT_PROGRESS = 'pyls/reportProgress'
 
     def __init__(self, root_uri, endpoint):
         self._root_uri = root_uri
@@ -85,6 +86,9 @@ class Workspace(object):
 
     def show_message(self, message, msg_type=lsp.MessageType.Info):
         self._endpoint.notify(self.M_SHOW_MESSAGE, params={'type': msg_type, 'message': message})
+
+    def report_progress(self, progress):
+        self._endpoint.notify(self.M_REPORT_PROGRESS, params=progress)
 
     def source_roots(self, document_path):
         """Return the source roots for the given document."""
