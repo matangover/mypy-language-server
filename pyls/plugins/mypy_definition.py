@@ -7,7 +7,7 @@ from mypy.util import short_type
 from mypy.nodes import (
     FuncDef, MypyFile, SymbolTable,
     SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
-    AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr, Import
+    AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr, ImportBase, Import, ImportAll, ImportFrom
 )
 from mypy.types import (
     Type, AnyType, TypeOfAny, CallableType, UnionType, NoneTyp, Instance, is_optional,
@@ -56,7 +56,7 @@ def find_definition(engine, path, line, column) -> Optional[Tuple[str, int, int]
     elif isinstance(node, MemberExpr):
         log.info("Find definition of '%s' (%s:%s)" % (node.name, node.line, node.column + 1))
         def_node = get_definition(node, engine.manager.all_types)
-    elif isinstance(node, Import):
+    elif isinstance(node, ImportBase):
         log.info("Find definition of import (%s:%s)" % (node.line, node.column + 1))
         def_node = get_import_definition(engine.manager, node, mypy_file, line, column, path)
     else:
@@ -95,31 +95,71 @@ def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line:
     column_relative_to_import = column
     if line == import_node.line:
         column_relative_to_import -= import_node.column
-    name = find_import_name(line_relative_to_import, column_relative_to_import, suite)
-    if not name:
+    module_name, name = find_import_name(import_node, line_relative_to_import, column_relative_to_import, suite)
+    if not module_name:
         return None
-    return manager.modules[name]
+    return manager.modules[module_name]
 
-def find_import_name(line, column, suite):
-    if token.ISTERMINAL(suite[0]):
-        return None
+def find_import_name(import_node, line, column, suite):
+    assert suite[0] == symbol.file_input
+    stmt = suite[1]
+    assert stmt[0] == symbol.stmt
+    simple_stmt = stmt[1]
+    assert simple_stmt[0] == symbol.simple_stmt
+    small_stmt = simple_stmt[1]
+    assert small_stmt[0] == symbol.small_stmt
+    import_stmt = small_stmt[1]
+    assert import_stmt[0] == symbol.import_stmt
 
-    for element in suite[1:]:
-        if element[0] == symbol.dotted_name:
-            modules = []
-            for dotted_name_part in element[1:]:
-                token_type, name, name_line, name_column = dotted_name_part
-                if token_type != token.NAME:
-                    continue
-                modules.append(name)
-                if token_contains_offset(name_line, name_column, len(name), line, column):
-                    return '.'.join(modules)
-        else:
-            result = find_import_name(line, column, element)
-            if result:
-                return result
+    if isinstance(import_node, Import):
+        import_name = import_stmt[1]
+        assert import_name[0] == symbol.import_name
+        dotted_as_names = import_name[2]
+        for dotted_as_name in dotted_as_names[1:]:
+            if dotted_as_name[0] != symbol.dotted_as_name:
+                continue
+            dotted_name = dotted_as_name[1]
+            name = get_dotted_name_at_position(dotted_name, line, column)
+            if name:
+                return name, None
+    elif isinstance(import_node, ImportAll):
+        import_from = import_stmt[1]
+        assert import_from[0] == symbol.import_from
+        leading_dots = ''
+        contained_in_leading_dots = False
+        for element in import_from[2:]:
+            if element[0] == token.NAME and element[1] == 'import':
+                break
+            if element[0] in (token.DOT, token.ELLIPSIS):
+                leading_dots += element[1]
+                if not contained_in_leading_dots:
+                    contained_in_leading_dots = token_contains_offset(element[2], element[3], len(element[1]), line, column)
+            elif element[0] == symbol.dotted_name:
+                if contained_in_leading_dots:
+                    name_token = element[1]
+                    assert name_token[0] == token.NAME
+                    first_name = name_token[1]
+                    return leading_dots + first_name, None
+                else:
+                    dotted_name = get_dotted_name_at_position(element, line, column)
+                    if dotted_name:
+                        return leading_dots + dotted_name, None
+    elif isinstance(import_node, ImportFrom):
+        pass
 
-    return None
+    return None, None
+
+
+def get_dotted_name_at_position(dotted_name, line, column):
+    assert dotted_name[0] == symbol.dotted_name
+    modules = []
+    for dotted_name_part in dotted_name[1:]:
+        token_type, name, name_line, name_column = dotted_name_part
+        if token_type != token.NAME:
+            continue
+        modules.append(name)
+        if token_contains_offset(name_line, name_column, len(name), line, column):
+            return '.'.join(modules)
 
 def token_contains_offset(token_line, token_column, token_length, line, column):
     if token_line != line:
