@@ -41,7 +41,7 @@ def get_hover(engine, path, line, column) -> Optional[str]:
     elif isinstance(node, MemberExpr):
         def_node = get_definition(node, engine.manager.all_types)
     elif isinstance(node, Import):
-        def_node = get_import_definition(node, mypy_file, line, column, path)
+        def_node = get_import_definition(engine.manager, node, mypy_file, line, column, path)
     else:
         log.info(f'Unknown expression: {short_type(node)}')
         return None

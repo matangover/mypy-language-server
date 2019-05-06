@@ -58,7 +58,7 @@ def find_definition(engine, path, line, column) -> Optional[Tuple[str, int, int]
         def_node = get_definition(node, engine.manager.all_types)
     elif isinstance(node, Import):
         log.info("Find definition of import (%s:%s)" % (node.line, node.column + 1))
-        def_node = get_import_definition(node, mypy_file, line, column, path)
+        def_node = get_import_definition(engine.manager, node, mypy_file, line, column, path)
     else:
         logging.error(f'Unknown expression: {short_type(node)}')
         
@@ -76,7 +76,7 @@ def find_definition(engine, path, line, column) -> Optional[Tuple[str, int, int]
     
     return filename, def_node.line, column
 
-def get_import_definition(import_node: Node, mypy_file: MypyFile, line: int, column: int, path: str) -> Optional[Node]:
+def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line: int, column: int, path: str) -> Optional[Node]:
     # lines are 1 based, cols 0 based.
 
     with open(path) as file:
@@ -98,7 +98,7 @@ def get_import_definition(import_node: Node, mypy_file: MypyFile, line: int, col
     name = find_import_name(line_relative_to_import, column_relative_to_import, suite)
     if not name:
         return None
-    return mypy_file.names[name].node
+    return manager.modules[name]
 
 def find_import_name(line, column, suite):
     if token.ISTERMINAL(suite[0]):
@@ -106,11 +106,14 @@ def find_import_name(line, column, suite):
 
     for element in suite[1:]:
         if element[0] == symbol.dotted_name:
+            modules = []
             for dotted_name_part in element[1:]:
                 token_type, name, name_line, name_column = dotted_name_part
-                if token_type == token.NAME and token_contains_offset(name_line, name_column, len(name), line, column):
-                    return name
-            # TODO: dotted names (e.g. import os.path).
+                if token_type != token.NAME:
+                    continue
+                modules.append(name)
+                if token_contains_offset(name_line, name_column, len(name), line, column):
+                    return '.'.join(modules)
         else:
             result = find_import_name(line, column, element)
             if result:
