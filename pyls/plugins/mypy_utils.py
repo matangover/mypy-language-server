@@ -116,7 +116,6 @@ class NodeFinder(TraverserVisitor):
         self.found = False
 
     def process_node(self, node: Node):
-        # print(f'process: {type(node)}')
         if self.node_to_find == node:
             self.found = True
 
@@ -200,7 +199,7 @@ def find_name_expr(fgmanager, path: str, line: int, column: int) -> Tuple[Option
     return finder.node, tree
 
 def get_file(manager, node: Node, mypy_file: MypyFile) -> Optional[str]:
-    print(f'looking for {type(node)}')
+    # print(f'looking for {type(node)}')
     if isinstance(node, MypyFile):
         return node.path
 
@@ -209,14 +208,14 @@ def get_file(manager, node: Node, mypy_file: MypyFile) -> Optional[str]:
     if isinstance(node, Var):
         tup = lookup_fully_qualified(node.fullname(), manager.modules)
         if tup is None:
-            print('Var not found in modules')
+            # print('Var not found in modules')
             return None
         else:
             var, mod = tup
             if var.node == node:
                 return mod.path
             else:
-                print(f'Found var but not identical. Found type is {short_type(var.node)}')
+                # print(f'Found var but not identical. Found type is {short_type(var.node)}')
                 if mod != mypy_file:
                     mypy_files.append(mod)
 
@@ -227,7 +226,7 @@ def get_file(manager, node: Node, mypy_file: MypyFile) -> Optional[str]:
         node = node.defn
     finder = NodeFinder(node)
     for file in mypy_files:
-        print('looking in %s' % file.path)
+        # print('looking in %s' % file.path)
         file.accept(finder)
         if finder.found:
             return file.path
