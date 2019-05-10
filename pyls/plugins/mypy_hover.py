@@ -21,7 +21,10 @@ log = logging.getLogger(__name__)
 def pyls_hover(workspace, document, position):
     fgmanager = workspace.mypy_server.fine_grained_manager
     hover = get_hover(fgmanager, document.path, position['line'], position['character'])
-    return {'contents': hover or ''}
+    if hover:
+        return {'contents': hover}
+    else:
+        return None
 
 
 def get_hover(fgmanager, path, line, column) -> Optional[str]:
