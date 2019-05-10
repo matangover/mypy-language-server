@@ -1,7 +1,6 @@
 # Copyright 2017 Palantir Technologies, Inc.
 import logging
 from pyls import hookimpl, _utils
-from mypy.suggestions import SuggestionEngine, get_definition
 from mypy.nodes import (
     FuncDef, MypyFile, SymbolTable,
     SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
@@ -13,21 +12,22 @@ from mypy.types import (
 )
 from mypy.util import short_type
 from .mypy_definition import get_import_definition
+from . import mypy_utils
 
 log = logging.getLogger(__name__)
 
 
 @hookimpl
 def pyls_hover(workspace, document, position):
-    engine = SuggestionEngine(workspace.mypy_server.fine_grained_manager)
-    hover = get_hover(engine, document.path, position['line'], position['character'])
+    fgmanager = workspace.mypy_server.fine_grained_manager
+    hover = get_hover(fgmanager, document.path, position['line'], position['character'])
     return {'contents': hover or ''}
 
 
-def get_hover(engine, path, line, column) -> Optional[str]:
+def get_hover(fgmanager, path, line, column) -> Optional[str]:
     # Columns are zero based in the AST, but rows are 1-based.
     line = line + 1
-    node, mypy_file = engine.find_name_expr(path, line, column)
+    node, mypy_file = mypy_utils.find_name_expr(fgmanager, path, line, column)
 
     if node is None:
         log.info('No name expression at this location')
@@ -39,9 +39,9 @@ def get_hover(engine, path, line, column) -> Optional[str]:
     elif isinstance(node, Instance):
         def_node = node.type
     elif isinstance(node, MemberExpr):
-        def_node = get_definition(node, engine.manager.all_types)
+        def_node = mypy_utils.get_definition(node, fgmanager.manager.all_types)
     elif isinstance(node, ImportBase):
-        def_node = get_import_definition(engine.manager, node, mypy_file, line, column, path)
+        def_node = get_import_definition(fgmanager.manager, node, mypy_file, line, column, path)
     else:
         log.info(f'Unknown expression: {short_type(node)}')
         return None
