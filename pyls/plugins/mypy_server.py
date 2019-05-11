@@ -32,6 +32,10 @@ def mypy_check(workspace):
     log.info('Checking mypy...')
     workspace.report_progress('$(gear~spin) mypy')
     try:
+        def report_status(processed_targets: int) -> None:
+            workspace.report_progress(f'$(gear~spin) mypy ({processed_targets})')
+        workspace.mypy_server.status_callback = report_status
+
         result = workspace.mypy_server.cmd_check([workspace.root_path])
         log.info(f'mypy done, exit code {result["status"]}')
         if result['err']:
@@ -45,7 +49,7 @@ def mypy_check(workspace):
         log.exception('Oopsy, mypy tried to exit.')
     finally:
         workspace.report_progress(None)
-
+        workspace.mypy_server.status_callback = None
 
 def parse_line(line):
     result = re.match(line_pattern, line)
