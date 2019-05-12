@@ -6,7 +6,7 @@ README = open('README.rst', 'r').read()
 
 
 setup(
-    name='python-language-server',
+    name='mypy-language-server',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -14,14 +14,14 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
 
-    description='Python Language Server for the Language Server Protocol',
+    description='Type checking and rich language features for Python using mypy.',
 
     long_description=README,
 
     # The project's main homepage.
-    url='https://github.com/palantir/python-language-server',
+    url='https://github.com/matangover/mypy-language-server',
 
-    author='Palantir Technologies, Inc.',
+    author='Matan Gover',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
