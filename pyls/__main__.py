@@ -5,6 +5,8 @@ import logging
 import logging.config
 import sys
 from .python_ls import start_io_lang_server, start_tcp_lang_server, PythonLanguageServer
+from contextlib import redirect_stdout
+import os
 
 LOG_FORMAT = "%(asctime)s UTC - %(levelname)s - %(name)s - %(message)s"
 
@@ -58,7 +60,8 @@ def main():
         start_tcp_lang_server(args.host, args.port, PythonLanguageServer)
     else:
         stdin, stdout = _binary_stdio()
-        start_io_lang_server(stdin, stdout, args.check_parent_process, PythonLanguageServer)
+        with open(os.devnull, 'w') as devnull, redirect_stdout(devnull):
+            start_io_lang_server(stdin, stdout, args.check_parent_process, PythonLanguageServer)
 
 
 def _binary_stdio():
@@ -78,7 +81,6 @@ def _binary_stdio():
         if sys.platform == "win32":
             # set sys.stdin to binary mode
             # pylint: disable=no-member,import-error
-            import os
             import msvcrt
             msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
             msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
