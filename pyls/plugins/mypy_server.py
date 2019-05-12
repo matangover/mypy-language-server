@@ -29,7 +29,7 @@ def configuration_changed(config, workspace):
         log.error('Configuration change detected, but mypy cannot be restarted for now. '
                   'Reload window to apply new mypy configuration.')
         return
-    
+
     initialized = True
 
     options = Options()
@@ -43,11 +43,14 @@ def configuration_changed(config, workspace):
         parse_config_file(options, config_file)
     stderr = stderr_stream.getvalue()
     if stderr:
-        log.error(f'Error parsing mypy config file:\n{stderr}')
+        log.error(f'Error reading mypy config file:\n{stderr}')
+        workspace.show_message(f'Error reading mypy config file:\n{stderr}')
     if options.config_file:
         log.info(f'Read mypy config from: {options.config_file}')
     else:
         log.info(f'Mypy configuration not read, using defaults.')
+        if config_file:
+            workspace.show_message(f'Mypy config file not found:\n{config_file}')
 
     options.show_column_numbers = True
     if options.follow_imports not in ('error', 'skip'):
@@ -73,13 +76,16 @@ def mypy_check(workspace):
         log.info(f'mypy done, exit code {result["status"]}')
         if result['err']:
             log.info(f'mypy stderr:\n{result["err"]}')
+            workspace.show_message(f'Error running mypy: {result["err"]}')
         if result['out']:
             log.info(f'mypy stdout:\n{result["out"]}')
             publish_diagnostics(workspace, result['out'])
-    except Exception:
+    except Exception as e:
         log.exception('Error in mypy check:')
-    except SystemExit:
+        workspace.show_message(f'Error running mypy: {e}')
+    except SystemExit as e:
         log.exception('Oopsy, mypy tried to exit.')
+        workspace.show_message(f'Error running mypy: {e}')
     finally:
         workspace.report_progress(None)
         workspace.mypy_server.status_callback = None
