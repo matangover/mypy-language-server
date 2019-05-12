@@ -9,7 +9,7 @@ from mypy.dmypy_server import Server
 from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.options import Options
 from mypy.main import parse_config_file
-from typing import Set
+from typing import Set, Dict, Optional
 
 from pyls import hookimpl, lsp
 from threading import Thread
@@ -19,25 +19,25 @@ from io import StringIO
 line_pattern = r"([^:]+):(?:(\d+):)?(?:(\d+):)? (\w+): (.*)"
 
 log = logging.getLogger(__name__)
-initialized = False
+settings: Optional[Dict[str, object]] = None
 
 def configuration_changed(config, workspace):
-    global initialized
+    global settings
     if not workspace.root_path:
         return
-    if initialized:
-        log.error('Configuration change detected, but mypy cannot be restarted for now. '
-                  'Reload window to apply new mypy configuration.')
+    if settings is not None:
+        new_settings = config.plugin_settings('mypy')
+        if new_settings != settings:
+            workspace.show_message('Please reload window to update mypy configuration.')
         return
 
-    initialized = True
-
+    settings = config.plugin_settings('mypy')
     options = Options()
     options.check_untyped_defs = True
     options.follow_imports = 'error'
     options.use_fine_grained_cache = True
     stderr_stream = StringIO()
-    config_file = config.plugin_settings('mypy').get('configFile')
+    config_file = settings.get('configFile')
     log.info(f'Trying to read mypy config file from {config_file or "default locations"}')
     with redirect_stderr(stderr_stream):
         parse_config_file(options, config_file)
@@ -72,7 +72,7 @@ def mypy_check(workspace, config):
             workspace.report_progress(f'$(gear~spin) mypy ({processed_targets})')
         workspace.mypy_server.status_callback = report_status
 
-        targets = config.plugin_settings('mypy').get('targets') or ['.']
+        targets = settings.get('targets') or ['.']
         targets = [os.path.join(workspace.root_path, target) for target in targets]
         result = workspace.mypy_server.cmd_check(targets)
         log.info(f'mypy done, exit code {result["status"]}')
