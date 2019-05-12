@@ -59,9 +59,9 @@ def configuration_changed(config, workspace):
 
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
 
-    mypy_check(workspace)
+    mypy_check(workspace, config)
 
-def mypy_check(workspace):
+def mypy_check(workspace, config):
     if not workspace.root_path:
         return
 
@@ -72,7 +72,9 @@ def mypy_check(workspace):
             workspace.report_progress(f'$(gear~spin) mypy ({processed_targets})')
         workspace.mypy_server.status_callback = report_status
 
-        result = workspace.mypy_server.cmd_check([workspace.root_path])
+        targets = config.plugin_settings('mypy').get('targets') or ['.']
+        targets = [os.path.join(workspace.root_path, target) for target in targets]
+        result = workspace.mypy_server.cmd_check(targets)
         log.info(f'mypy done, exit code {result["status"]}')
         if result['err']:
             log.info(f'mypy stderr:\n{result["err"]}')

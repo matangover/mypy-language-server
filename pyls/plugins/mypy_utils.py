@@ -186,7 +186,7 @@ def find_name_expr(fgmanager, path: str, line: int, column: int) -> Tuple[Option
     states = [t for t in fgmanager.graph.values() if t.path == path]
     if not states:
         loaded = '\n'.join([t.path or '<None>' for t in fgmanager.graph.values()])
-        raise RuntimeError(f'Module not found: {path}. Loaded modules:\n{loaded}')
+        return None, None
     tree = states[0].tree
     assert tree is not None
 
@@ -232,3 +232,6 @@ def get_file(manager, node: Node, mypy_file: MypyFile) -> Optional[str]:
             return file.path
 
     return None
+
+class ModuleNotAnalyzed(Exception):
+    pass

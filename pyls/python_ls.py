@@ -265,7 +265,7 @@ class PythonLanguageServer(MethodDispatcher):
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
         self.lint(textDocument['uri'], is_saved=True)
-        mypy_server.mypy_check(self.workspace)
+        mypy_server.mypy_check(self.workspace, self.config)
 
     def m_text_document__code_action(self, textDocument=None, range=None, context=None, **_kwargs):
         return self.code_actions(textDocument['uri'], range, context)

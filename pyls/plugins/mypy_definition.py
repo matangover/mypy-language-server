@@ -43,6 +43,10 @@ def find_definition(fgmanager, path, line, column) -> Optional[Tuple[str, int, i
     line = line + 1
     node, mypy_file = mypy_utils.find_name_expr(fgmanager, path, line, column)
 
+    if mypy_file is None:
+        log.error(f'Module not analyzed by mypy: {path}')
+        return None
+
     if node is None:
         log.info('No name expression at this location')
         return None
