@@ -2,7 +2,7 @@ import logging
 import os
 import re
 from collections import defaultdict
-import pyls.uris
+from . import uris
 
 from mypy.dmypy_server import Server
 from mypy.dmypy_util import DEFAULT_STATUS_FILE
@@ -10,7 +10,7 @@ from mypy.options import Options
 from mypy.main import parse_config_file
 from typing import Set, Dict, Optional
 
-from pyls import lsp
+from . import lsp
 from contextlib import redirect_stderr
 from io import StringIO
 
@@ -132,7 +132,7 @@ def publish_diagnostics(workspace, mypy_output):
     previous_documents_with_diagnostics = documents_with_diagnostics.copy()
     documents_with_diagnostics.clear()
     for path, diagnostics in diagnostics_by_path.items():
-        uri = pyls.uris.from_fs_path(os.path.join(workspace.root_path, path))
+        uri = uris.from_fs_path(os.path.join(workspace.root_path, path))
         documents_with_diagnostics.add(uri)
         # TODO: If mypy is really fast, it may finish before initialization is complete,
         #       and this call will have no effect. (?)

@@ -12,7 +12,7 @@ LOG_FORMAT = "%(asctime)s UTC - %(levelname)s - %(name)s - %(message)s"
 
 
 def add_arguments(parser):
-    parser.description = "Python Language Server"
+    parser.description = "Mypy Language Server"
 
     parser.add_argument(
         "--tcp", action="store_true",

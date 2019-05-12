@@ -6,7 +6,7 @@ import threading
 from pyls_jsonrpc.dispatchers import MethodDispatcher
 from pyls_jsonrpc.endpoint import Endpoint
 from pyls_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
-from pyls import mypy_server, mypy_hover, mypy_definition
+from . import mypy_server, mypy_hover, mypy_definition
 
 from . import lsp, _utils, uris
 from . import config

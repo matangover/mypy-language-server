@@ -1,5 +1,5 @@
 import logging
-from pyls import uris
+from . import uris
 from mypy.util import short_type, correct_relative_import
 
 from mypy.nodes import (

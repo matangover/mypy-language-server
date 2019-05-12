@@ -1,6 +1,6 @@
 # Copyright 2017 Palantir Technologies, Inc.
 import logging
-from pyls import _utils, uris
+from . import _utils, uris
 
 log = logging.getLogger(__name__)
 

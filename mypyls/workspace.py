@@ -18,7 +18,7 @@ class Workspace(object):
     M_PUBLISH_DIAGNOSTICS = 'textDocument/publishDiagnostics'
     M_APPLY_EDIT = 'workspace/applyEdit'
     M_SHOW_MESSAGE = 'window/showMessage'
-    M_REPORT_PROGRESS = 'pyls/reportProgress'
+    M_REPORT_PROGRESS = 'mypyls/reportProgress'
 
     def __init__(self, root_uri, endpoint):
         self._root_uri = root_uri
