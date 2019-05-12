@@ -1,6 +1,6 @@
 # Copyright 2017 Palantir Technologies, Inc.
 import logging
-from pyls import hookimpl, uris
+from pyls import uris
 from mypy.util import short_type, correct_relative_import
 
 from mypy.nodes import (
@@ -20,9 +20,7 @@ from . import mypy_utils
 
 log = logging.getLogger(__name__)
 
-
-@hookimpl
-def pyls_definitions(config, workspace, document, position):
+def get_definitions(config, workspace, document, position):
     fgmanager = workspace.mypy_server.fine_grained_manager
     if not fgmanager:
         return []
@@ -67,7 +65,7 @@ def find_definition(fgmanager, path, line, column) -> Optional[Tuple[str, int, i
         def_node = get_import_definition(fgmanager.manager, node, mypy_file, line, column, path)
     else:
         logging.error(f'Unknown expression: {short_type(node)}')
-        
+
     if def_node is None:
         logging.error('Definition not found')
         return None
@@ -79,7 +77,7 @@ def find_definition(fgmanager, path, line, column) -> Optional[Tuple[str, int, i
     # Column is zero-based. Sometimes returns -1 :\
     column = 0 if def_node.column == -1 else def_node.column
     log.info("Definition at %s:%s:%s (%s)" % (filename, def_node.line, column, short_type(def_node)))
-    
+
     return filename, def_node.line, column
 
 def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line: int, column: int, path: str) -> Optional[Node]:
@@ -196,5 +194,5 @@ def get_dotted_name_at_position(dotted_name, line, column):
 def token_contains_offset(token_line, token_column, token_length, line, column):
     if token_line != line:
         return False
-    
+
     return token_column <= column <= token_column + token_length

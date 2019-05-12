@@ -1,6 +1,5 @@
 # Copyright 2017 Palantir Technologies, Inc.
 import logging
-from pyls import hookimpl, _utils
 from mypy.nodes import (
     FuncDef, MypyFile, SymbolTable,
     SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
@@ -16,9 +15,7 @@ from . import mypy_utils
 
 log = logging.getLogger(__name__)
 
-
-@hookimpl
-def pyls_hover(workspace, document, position):
+def hover(workspace, document, position):
     fgmanager = workspace.mypy_server.fine_grained_manager
     if not fgmanager:
         return None

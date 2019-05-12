@@ -36,65 +36,11 @@ setup(
         'future>=0.14.0',
         'futures; python_version<"3.2"',
         'backports.functools_lru_cache; python_version<"3.2"',
-        'jedi>=0.13.2',
         'python-jsonrpc-server>=0.1.0',
-        'pluggy'
     ],
-
-    # List additional groups of dependencies here (e.g. development
-    # dependencies). You can install these using the following syntax,
-    # for example:
-    # $ pip install -e .[test]
-    extras_require={
-        'all': [
-            'autopep8',
-            'mccabe',
-            'pycodestyle',
-            'pydocstyle>=2.0.0',
-            'pyflakes>=1.6.0',
-            'pylint',
-            'rope>=0.10.5',
-            'yapf',
-        ],
-        'autopep8': ['autopep8'],
-        'mccabe': ['mccabe'],
-        'pycodestyle': ['pycodestyle'],
-        'pydocstyle': ['pydocstyle>=2.0.0'],
-        'pyflakes': ['pyflakes>=1.6.0'],
-        'pylint': ['pylint'],
-        'rope': ['rope>0.10.5'],
-        'yapf': ['yapf'],
-        'test': ['versioneer', 'pylint', 'pytest', 'mock', 'pytest-cov', 'coverage'],
-    },
-
-    # To provide executable scripts, use entry points in preference to the
-    # "scripts" keyword. Entry points provide cross-platform support and allow
-    # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
             'pyls = pyls.__main__:main',
-        ],
-        'pyls': [
-            'autopep8 = pyls.plugins.autopep8_format',
-            'jedi_completion = pyls.plugins.jedi_completion',
-            # 'jedi_definition = pyls.plugins.definition',
-            # 'jedi_hover = pyls.plugins.hover',
-            'jedi_highlight = pyls.plugins.highlight',
-            'jedi_references = pyls.plugins.references',
-            'jedi_signature_help = pyls.plugins.signature',
-            'jedi_symbols = pyls.plugins.symbols',
-            'mccabe = pyls.plugins.mccabe_lint',
-            'preload = pyls.plugins.preload_imports',
-            'pycodestyle = pyls.plugins.pycodestyle_lint',
-            'pydocstyle = pyls.plugins.pydocstyle_lint',
-            'pyflakes = pyls.plugins.pyflakes_lint',
-            'pylint = pyls.plugins.pylint_lint',
-            'rope_completion = pyls.plugins.rope_completion',
-            'rope_rename = pyls.plugins.rope_rename',
-            'yapf = pyls.plugins.yapf_format',
-            'mypy_server = pyls.plugins.mypy_server',
-            'mypy_definition = pyls.plugins.mypy_definition',
-            'mypy_hover = pyls.plugins.mypy_hover',
         ]
     },
 )

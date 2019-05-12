@@ -11,8 +11,7 @@ from mypy.options import Options
 from mypy.main import parse_config_file
 from typing import Set, Dict, Optional
 
-from pyls import hookimpl, lsp
-from threading import Thread
+from pyls import lsp
 from contextlib import redirect_stderr
 from io import StringIO
 
@@ -26,12 +25,12 @@ def configuration_changed(config, workspace):
     if not workspace.root_path:
         return
     if settings is not None:
-        new_settings = config.plugin_settings('mypy')
+        new_settings = config.settings()
         if new_settings != settings:
             workspace.show_message('Please reload window to update mypy configuration.')
         return
 
-    settings = config.plugin_settings('mypy')
+    settings = config.settings()
     options = Options()
     options.check_untyped_defs = True
     options.follow_imports = 'error'
