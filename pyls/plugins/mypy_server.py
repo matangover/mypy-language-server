@@ -54,7 +54,7 @@ def configuration_changed(config, workspace):
 
     options.show_column_numbers = True
     if options.follow_imports not in ('error', 'skip'):
-        log.info(f"Cannot use follow_imports='{options.follow_imports}', using 'error' instead.")
+        workspace.show_message(f"Cannot use follow_imports='{options.follow_imports}', using 'error' instead.")
         options.follow_imports = 'error'
 
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
