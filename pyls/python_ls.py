@@ -6,6 +6,7 @@ import threading
 from pyls_jsonrpc.dispatchers import MethodDispatcher
 from pyls_jsonrpc.endpoint import Endpoint
 from pyls_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
+from pyls.plugins import mypy_server
 
 from . import lsp, _utils, uris
 from .config import config
@@ -264,7 +265,6 @@ class PythonLanguageServer(MethodDispatcher):
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
         self.lint(textDocument['uri'], is_saved=True)
-        from pyls.plugins import mypy_server
         mypy_server.mypy_check(self.workspace)
 
     def m_text_document__code_action(self, textDocument=None, range=None, context=None, **_kwargs):
@@ -308,6 +308,7 @@ class PythonLanguageServer(MethodDispatcher):
 
     def m_workspace__did_change_configuration(self, settings=None):
         self.config.update((settings or {}).get('pyls', {}))
+        mypy_server.configuration_changed(self.config, self.workspace)
         for doc_uri in self.workspace.documents:
             self.lint(doc_uri, is_saved=False)
 

@@ -8,25 +8,55 @@ import pyls.uris
 from mypy.dmypy_server import Server
 from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.options import Options
+from mypy.main import parse_config_file
 from typing import Set
 
 from pyls import hookimpl, lsp
 from threading import Thread
+from contextlib import redirect_stderr
+from io import StringIO
 
 line_pattern = r"([^:]+):(?:(\d+):)?(?:(\d+):)? (\w+): (.*)"
 
 log = logging.getLogger(__name__)
+initialized = False
 
-@hookimpl
-def pyls_initialize(config, workspace):
+def configuration_changed(config, workspace):
+    global initialized
+    if not workspace.root_path:
+        return
+    if initialized:
+        log.error('Configuration change detected, but mypy cannot be restarted for now. '
+                  'Reload window to apply new mypy configuration.')
+        return
+    
+    initialized = True
+
     options = Options()
-    options.show_column_numbers = True
-    options.follow_imports = 'error'
     options.check_untyped_defs = True
+    options.follow_imports = 'error'
+    options.use_fine_grained_cache = True
+    stderr_stream = StringIO()
+    config_file = config.plugin_settings('mypy').get('configFile')
+    log.info(f'Trying to read mypy config file from {config_file or "default locations"}')
+    with redirect_stderr(stderr_stream):
+        parse_config_file(options, config_file)
+    stderr = stderr_stream.getvalue()
+    if stderr:
+        log.error(f'Error parsing mypy config file:\n{stderr}')
+    if options.config_file:
+        log.info(f'Read mypy config from: {options.config_file}')
+    else:
+        log.info(f'Mypy configuration not read, using defaults.')
+
+    options.show_column_numbers = True
+    if options.follow_imports not in ('error', 'skip'):
+        log.info(f"Cannot use follow_imports='{options.follow_imports}', using 'error' instead.")
+        options.follow_imports = 'error'
+
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
 
-    thread = Thread(target=mypy_check, args=(workspace, ))
-    thread.start()
+    mypy_check(workspace)
 
 def mypy_check(workspace):
     log.info('Checking mypy...')
