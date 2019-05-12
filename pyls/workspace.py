@@ -4,8 +4,6 @@ import logging
 import os
 import re
 
-import jedi
-
 from . import lsp, uris, _utils
 
 log = logging.getLogger(__name__)
@@ -28,23 +26,6 @@ class Workspace(object):
         self._root_uri_scheme = uris.urlparse(self._root_uri)[0]
         self._root_path = uris.to_fs_path(self._root_uri)
         self._docs = {}
-
-        # Whilst incubating, keep rope private
-        self.__rope = None
-        self.__rope_config = None
-
-    def _rope_project_builder(self, rope_config):
-        from rope.base.project import Project
-
-        # TODO: we could keep track of dirty files and validate only those
-        if self.__rope is None or self.__rope_config != rope_config:
-            rope_folder = rope_config.get('ropeFolder')
-            self.__rope = Project(self._root_path, ropefolder=rope_folder)
-            self.__rope.prefs.set('extension_modules', rope_config.get('extensionModules', []))
-            self.__rope.prefs.set('ignore_syntax_errors', True)
-            self.__rope.prefs.set('ignore_bad_imports', True)
-        self.__rope.validate()
-        return self.__rope
 
     @property
     def documents(self):
@@ -90,23 +71,16 @@ class Workspace(object):
     def report_progress(self, progress):
         self._endpoint.notify(self.M_REPORT_PROGRESS, params=progress)
 
-    def source_roots(self, document_path):
-        """Return the source roots for the given document."""
-        files = _utils.find_parents(self._root_path, document_path, ['setup.py']) or []
-        return [os.path.dirname(setup_py) for setup_py in files]
-
     def _create_document(self, doc_uri, source=None, version=None):
         path = uris.to_fs_path(doc_uri)
         return Document(
-            doc_uri, source=source, version=version,
-            extra_sys_path=self.source_roots(path),
-            rope_project_builder=self._rope_project_builder,
+            doc_uri, source=source, version=version
         )
 
 
 class Document(object):
 
-    def __init__(self, uri, source=None, version=None, local=True, extra_sys_path=None, rope_project_builder=None):
+    def __init__(self, uri, source=None, version=None, local=True):
         self.uri = uri
         self.version = version
         self.path = uris.to_fs_path(uri)
@@ -114,15 +88,9 @@ class Document(object):
 
         self._local = local
         self._source = source
-        self._extra_sys_path = extra_sys_path or []
-        self._rope_project_builder = rope_project_builder
-
+    
     def __str__(self):
         return str(self.uri)
-
-    def _rope_resource(self, rope_config):
-        from rope.base import libutils
-        return libutils.path_to_resource(self._rope_project_builder(rope_config), self.path)
 
     @property
     def lines(self):
@@ -199,30 +167,3 @@ class Document(object):
         m_end = RE_END_WORD.findall(end)
 
         return m_start[0] + m_end[-1]
-
-    def jedi_names(self, all_scopes=False, definitions=True, references=False):
-        return jedi.api.names(
-            source=self.source, path=self.path, all_scopes=all_scopes,
-            definitions=definitions, references=references
-        )
-
-    def jedi_script(self, position=None):
-        kwargs = {
-            'source': self.source,
-            'path': self.path,
-            'sys_path': self.sys_path()
-        }
-        if position:
-            kwargs['line'] = position['line'] + 1
-            kwargs['column'] = _utils.clip_column(position['character'], self.lines, position['line'])
-        return jedi.Script(**kwargs)
-
-    def sys_path(self):
-        # Copy our extra sys path
-        path = list(self._extra_sys_path)
-
-        # TODO(gatesn): #339 - make better use of jedi environments, they seem pretty powerful
-        environment = jedi.api.environment.get_cached_default_environment()
-        path.extend(environment.get_sys_path())
-
-        return path
