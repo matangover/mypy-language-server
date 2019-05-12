@@ -1,4 +1,3 @@
-# Copyright 2017 Palantir Technologies, Inc.
 import logging
 from mypy.nodes import (
     FuncDef, MypyFile, SymbolTable,

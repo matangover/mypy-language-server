@@ -1,4 +1,3 @@
-# Copyright 2017 Palantir Technologies, Inc.
 import logging
 import os
 import re

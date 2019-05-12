@@ -1,4 +1,3 @@
-# Copyright 2017 Palantir Technologies, Inc.
 import logging
 from pyls import uris
 from mypy.util import short_type, correct_relative_import
