@@ -59,6 +59,9 @@ def configuration_changed(config, workspace):
     mypy_check(workspace)
 
 def mypy_check(workspace):
+    if not workspace.root_path:
+        return
+
     log.info('Checking mypy...')
     workspace.report_progress('$(gear~spin) mypy')
     try:

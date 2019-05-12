@@ -20,6 +20,8 @@ log = logging.getLogger(__name__)
 @hookimpl
 def pyls_hover(workspace, document, position):
     fgmanager = workspace.mypy_server.fine_grained_manager
+    if not fgmanager:
+        return None
     hover = get_hover(fgmanager, document.path, position['line'], position['character'])
     if hover:
         return {'contents': hover}

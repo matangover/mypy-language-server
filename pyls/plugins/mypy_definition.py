@@ -24,6 +24,8 @@ log = logging.getLogger(__name__)
 @hookimpl
 def pyls_definitions(config, workspace, document, position):
     fgmanager = workspace.mypy_server.fine_grained_manager
+    if not fgmanager:
+        return []
     definition = find_definition(fgmanager, document.path, position['line'], position['character'])
     if definition is None:
         return []
@@ -90,7 +92,10 @@ def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line:
         last_line = code_lines[import_node.end_line-1][:import_node.end_column]
         import_code = first_line + intermediate_lines + last_line
     
-    suite = parser.suite(import_code).tolist(True, True)
+    try:
+        suite = parser.suite(import_code).tolist(True, True)
+    except SyntaxError:
+        return None
     line_relative_to_import = line - import_node.line + 1
     column_relative_to_import = column
     if line == import_node.line:
@@ -98,9 +103,15 @@ def get_import_definition(manager, import_node: Node, mypy_file: MypyFile, line:
     module_name, name = find_import_name(import_node, line_relative_to_import, column_relative_to_import, suite, mypy_file)
     if not module_name:
         return None
-    module = manager.modules[module_name]
+    module = manager.modules.get(module_name)
+    if not module:
+        return None
     if name:
-        return module.names[name].node # TODO: return file too
+        symbol_node = module.names.get(name)
+        if symbol_node:
+            return symbol_node.node # TODO: return file too
+        else:
+            return None
     else:
         return module
 
