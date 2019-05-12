@@ -72,10 +72,7 @@ class Workspace(object):
         self._endpoint.notify(self.M_REPORT_PROGRESS, params=progress)
 
     def _create_document(self, doc_uri, source=None, version=None):
-        path = uris.to_fs_path(doc_uri)
-        return Document(
-            doc_uri, source=source, version=version
-        )
+        return Document(doc_uri, source=source, version=version)
 
 
 class Document(object):

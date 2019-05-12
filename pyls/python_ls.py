@@ -6,10 +6,10 @@ import threading
 from pyls_jsonrpc.dispatchers import MethodDispatcher
 from pyls_jsonrpc.endpoint import Endpoint
 from pyls_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
-from pyls.plugins import mypy_server, mypy_hover, mypy_definition
+from pyls import mypy_server, mypy_hover, mypy_definition
 
 from . import lsp, _utils, uris
-from .config import config
+from . import config
 from .workspace import Workspace
 
 log = logging.getLogger(__name__)
@@ -183,23 +183,23 @@ class PythonLanguageServer(MethodDispatcher):
         self.config.update((settings or {}).get('mypy', {}))
         mypy_server.configuration_changed(self.config, self.workspace)
 
-    def TODO_m_workspace__did_change_watched_files(self, changes=None, **_kwargs):
-        changed_py_files = set()
-        config_changed = False
-        for d in (changes or []):
-            if d['uri'].endswith(PYTHON_FILE_EXTENSIONS):
-                changed_py_files.add(d['uri'])
-            elif d['uri'].endswith(CONFIG_FILEs):
-                config_changed = True
-
-        if config_changed:
-            self.config.settings.cache_clear()
-        elif not changed_py_files:
-            # Only externally changed python files and lint configs may result in changed diagnostics.
-            return
-
-        for doc_uri in self.workspace.documents:
-            # Changes in doc_uri are already handled by m_text_document__did_save
-            if doc_uri not in changed_py_files:
-                # self.lint(doc_uri, is_saved=False)
-                pass
+    # def TODO_m_workspace__did_change_watched_files(self, changes=None, **_kwargs):
+    #     changed_py_files = set()
+    #     config_changed = False
+    #     for d in (changes or []):
+    #         if d['uri'].endswith(PYTHON_FILE_EXTENSIONS):
+    #             changed_py_files.add(d['uri'])
+    #         elif d['uri'].endswith(CONFIG_FILEs):
+    #             config_changed = True
+    #
+    #     if config_changed:
+    #         self.config.settings.cache_clear()
+    #     elif not changed_py_files:
+    #         # Only externally changed python files and lint configs may result in changed diagnostics.
+    #         return
+    #
+    #     for doc_uri in self.workspace.documents:
+    #         # Changes in doc_uri are already handled by m_text_document__did_save
+    #         if doc_uri not in changed_py_files:
+    #             # self.lint(doc_uri, is_saved=False)
+    #             pass
