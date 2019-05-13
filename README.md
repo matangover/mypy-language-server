@@ -13,7 +13,7 @@ To use this language server in VS Code, use the [Mypy extension for VS Code](htt
 
 Requires Python 3.5 or later.
 ```shell
-$ pip install mypyls
+$ pip install "https://github.com/matangover/mypyls/archive/master.zip#egg=mypyls[default-mypy]"
 ```
 
 #### Installation with hover and go to definition
@@ -24,11 +24,7 @@ These features require Python 3.8 (currently in pre-release) and a patched versi
 2. Create a Python 3.8 virtualenv and install mypyls in it:
     ```shell
     $ python3.8 -m venv ~/.mypyls
-    $ ~/.mypyls/bin/pip install mypyls
-    ```
-3. Install the patched version of mypy in the virtualenv:
-    ```shell
-    $ ~/.mypyls/bin/pip install git+https://github.com/matangover/mypy
+    $ ~/.mypyls/bin/pip install "https://github.com/matangover/mypyls/archive/master.zip#egg=mypyls[patched-mypy]"
     ```
 
 ## License

@@ -13,7 +13,7 @@ setup(
     description='Type checking and rich language features for Python using mypy.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/matangover/mypy-language-server',
+    url='https://github.com/matangover/mypyls',
     author='Matan Gover',
     packages=find_packages(),
 
