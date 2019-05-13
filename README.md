@@ -5,7 +5,7 @@ Runs mypy on Python code to provide type checking, go to definition, and hover.
 ## Installation
 
 ### Installation in VS Code
-To use this language server in VS Code, follow the instructions in the [VS Code extension README](vscode-client/README.md).
+To use this language server in VS Code, use the [Mypy extension for VS Code](https://github.com/matangover/mypy-vscode/blob/master/README.md).
 
 ### Usage with other language server hosts
 
