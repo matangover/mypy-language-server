@@ -63,6 +63,7 @@ def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
         raise ValueError('Handler class must be an instance of PythonLanguageServer')
     log.info('Starting %s IO language server', handler_class.__name__)
     log.info(f'sys.executable = {sys.executable}')
+    log.info(f'sys.version = {sys.version}')
     log.info(f'__file__ = {__file__}')
     
     # import ptvsd
