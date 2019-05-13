@@ -18,9 +18,16 @@ setup(
     packages=find_packages(),
 
     install_requires=[
-        'python-jsonrpc-server>=0.1.0',
-        'mypy==0.701'
+        'python-jsonrpc-server>=0.1.0'
     ],
+    extras_require={
+        'default-mypy': [
+            'mypy==0.701'
+        ],
+        'patched-mypy': [
+            'mypy @ https://github.com/matangover/mypy/archive/master.zip'
+        ]
+    },
     python_requires='>=3.5',
     entry_points={
         'console_scripts': [
