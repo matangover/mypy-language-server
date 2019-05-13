@@ -77,6 +77,7 @@ def mypy_check(workspace, config):
 
         targets = settings.get('targets') or ['.']
         targets = [os.path.join(workspace.root_path, target) for target in targets]
+        log.info(f'Targets: {targets}')
         result = workspace.mypy_server.cmd_check(targets)
         log.info(f'mypy done, exit code {result["status"]}')
         if result['err']:
