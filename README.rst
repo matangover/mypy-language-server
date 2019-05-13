@@ -32,7 +32,7 @@ These features require Python 3.8 (currently in pre-release) and a patched versi
         $ python3.8 -m venv ~/.mypyls
         $ ~/.mypyls/bin/pip install mypyls
 
-3. Install the patched version of mypy:
+3. Install the patched version of mypy in the virtualenv:
 
     .. code:: shell
 
