@@ -36,6 +36,9 @@ def configuration_changed(config, workspace):
     options.use_fine_grained_cache = True
     stderr_stream = StringIO()
     config_file = settings.get('configFile')
+    if config_file == '':
+        # Use empty string rather than null in vscode settings, so that it's shown in settings editor GUI.
+        config_file = None
     log.info(f'Trying to read mypy config file from {config_file or "default locations"}')
     with redirect_stderr(stderr_stream):
         parse_config_file(options, config_file)

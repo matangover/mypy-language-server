@@ -17,7 +17,7 @@ setup(
         'python-jsonrpc-server>=0.1.0',
         'mypy==0.701'
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.5',
     entry_points={
         'console_scripts': [
             'mypyls = mypyls.__main__:main',
