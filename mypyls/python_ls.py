@@ -63,9 +63,9 @@ def start_io_lang_server(rfile, wfile, check_parent_process, handler_class):
         raise ValueError('Handler class must be an instance of PythonLanguageServer')
     log.info('Starting %s IO language server', handler_class.__name__)
     
-    import ptvsd
-    log.info("Waiting for debugger attach on port 5678...")
-    ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    # import ptvsd
+    # log.info("Waiting for debugger attach on port 5678...")
+    # ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
     # ptvsd.wait_for_attach()
     # log.info("Debugger attached, starting...")
 
