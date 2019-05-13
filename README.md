@@ -4,28 +4,7 @@ Runs mypy on Python code to provide type checking, go to definition, and hover.
 
 ## Installation
 
-### Installation in VS Code
-To use this language server in VS Code, use the [Mypy extension for VS Code](https://github.com/matangover/mypy-vscode/blob/master/README.md).
-
-### Usage with other language server hosts
-
-#### Basic installation (type checking only)
-
-Requires Python 3.5 or later.
-```shell
-$ pip install "https://github.com/matangover/mypyls/archive/master.zip#egg=mypyls[default-mypy]"
-```
-
-#### Installation with hover and go to definition
-
-These features require Python 3.8 (currently in pre-release) and a patched version of mypy.
-
-1. Install [Python 3.8 pre-release](https://www.python.org/download/pre-releases/) (you may choose to use [pyenv](https://github.com/pyenv/pyenv).
-2. Create a Python 3.8 virtualenv and install mypyls in it:
-    ```shell
-    $ python3.8 -m venv ~/.mypyls
-    $ ~/.mypyls/bin/pip install "https://github.com/matangover/mypyls/archive/master.zip#egg=mypyls[patched-mypy]"
-    ```
+Follow the installation instructions in [Mypy extension for VS Code](https://github.com/matangover/mypy-vscode/blob/master/README.md). Using the VS Code extension itself is not required -- the language server may be used with any editor that supports the Language Server Protocol.
 
 ## License
 
