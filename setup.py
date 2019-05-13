@@ -25,7 +25,8 @@ setup(
             'mypy==0.701'
         ],
         'patched-mypy': [
-            'mypy @ https://github.com/matangover/mypy/archive/master.zip'
+            # Cannot use zip archive because we must include the typeshed submodule.
+            'mypy @ git+https://github.com/matangover/mypy'
         ]
     },
     python_requires='>=3.5',
