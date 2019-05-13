@@ -77,6 +77,9 @@ class NodeFinderByLocation(TraverserVisitor):
 
 
 def get_definition(node: MemberExpr, typemap: Dict[Expression, Type]) -> Optional[Node]:
+    if node.node:
+        return node.node
+
     symbol_table_node: Optional[SymbolTableNode] = None
 
     typ = typemap.get(node.expr)
