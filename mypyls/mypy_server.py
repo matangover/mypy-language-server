@@ -8,6 +8,7 @@ from mypy.dmypy_server import Server
 from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.options import Options
 from mypy.main import parse_config_file
+from mypy.version import __version__ as mypy_version
 from typing import Set, Dict, Optional
 
 from . import lsp
@@ -69,9 +70,10 @@ def mypy_check(workspace, config):
     log.info('Checking mypy...')
     workspace.report_progress('$(gear~spin) mypy')
     try:
-        def report_status(processed_targets: int) -> None:
-            workspace.report_progress(f'$(gear~spin) mypy ({processed_targets})')
-        workspace.mypy_server.status_callback = report_status
+        if is_patched_mypy():
+            def report_status(processed_targets: int) -> None:
+                workspace.report_progress(f'$(gear~spin) mypy ({processed_targets})')
+            workspace.mypy_server.status_callback = report_status
 
         targets = settings.get('targets') or ['.']
         targets = [os.path.join(workspace.root_path, target) for target in targets]
@@ -87,11 +89,12 @@ def mypy_check(workspace, config):
         log.exception('Error in mypy check:')
         workspace.show_message(f'Error running mypy: {e}')
     except SystemExit as e:
-        log.exception('Oopsy, mypy tried to exit.')
-        workspace.show_message(f'Error running mypy: {e}')
+        log.exception('Internal error running mypy:')
+        workspace.show_message('Internal error running mypy. Open output pane for details.')
     finally:
         workspace.report_progress(None)
-        workspace.mypy_server.status_callback = None
+        if is_patched_mypy():
+            workspace.mypy_server.status_callback = None
 
 def parse_line(line):
     result = re.match(line_pattern, line)
@@ -144,3 +147,6 @@ def publish_diagnostics(workspace, mypy_output):
     documents_to_clear = previous_documents_with_diagnostics - documents_with_diagnostics
     for uri in documents_to_clear:
         workspace.publish_diagnostics(uri, [])
+
+def is_patched_mypy():
+    return 'langserver' in mypy_version

@@ -2,11 +2,11 @@
 import logging
 import socketserver
 import threading
+import sys
 
 from pyls_jsonrpc.dispatchers import MethodDispatcher
 from pyls_jsonrpc.endpoint import Endpoint
 from pyls_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
-from . import mypy_server, mypy_hover, mypy_definition
 
 from . import lsp, _utils, uris
 from . import config
@@ -113,9 +113,18 @@ class PythonLanguageServer(MethodDispatcher):
         self._jsonrpc_stream_writer.close()
 
     def capabilities(self):
+        from . import mypy_server
+        is_patched_mypy = mypy_server.is_patched_mypy()
+        if not is_patched_mypy:
+            log.info('Using non-patched mypy, rich language features not available.')
+        python_38 = sys.version_info >= (3, 8)
+        if not python_38:
+            log.info('Using Python before 3.8, rich language features not available.')
+        rich_analysis_available = is_patched_mypy and python_38
+
         server_capabilities = {
-            'definitionProvider': True,
-            'hoverProvider': True,
+            'definitionProvider': rich_analysis_available,
+            'hoverProvider': rich_analysis_available,
             'textDocumentSync': lsp.TextDocumentSyncKind.INCREMENTAL
         }
         log.info('Server capabilities: %s', server_capabilities)
@@ -129,6 +138,13 @@ class PythonLanguageServer(MethodDispatcher):
         self.workspace = Workspace(rootUri, self._endpoint)
         self.config = config.Config(rootUri, initializationOptions or {},
                                     processId, _kwargs.get('capabilities', {}))
+
+        try:
+            import mypy
+        except ImportError:
+            self.workspace.show_message('Mypy is not installed. Follow mypy-vscode installation instructions.', lsp.MessageType.Warning)
+            log.error(f'mypy is not installed. sys.path:\n{sys.path}')
+            return {'capabilities': None}
 
         if self._check_parent_process and processId is not None:
             def watch_parent_process(pid):
@@ -167,9 +183,11 @@ class PythonLanguageServer(MethodDispatcher):
             )
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
+        from . import mypy_server
         mypy_server.mypy_check(self.workspace, self.config)
 
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
+        from . import mypy_definition
         return mypy_definition.get_definitions(
             self.config,
             self.workspace,
@@ -177,9 +195,11 @@ class PythonLanguageServer(MethodDispatcher):
             position)
 
     def m_text_document__hover(self, textDocument=None, position=None, **_kwargs):
+        from . import mypy_hover
         return mypy_hover.hover(self.workspace, self.get_document(textDocument['uri']), position)
 
     def m_workspace__did_change_configuration(self, settings=None):
+        from . import mypy_server
         self.config.update((settings or {}).get('mypy', {}))
         mypy_server.configuration_changed(self.config, self.workspace)
 
