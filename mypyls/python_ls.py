@@ -15,7 +15,6 @@ from .workspace import Workspace
 log = logging.getLogger(__name__)
 
 
-LINT_DEBOUNCE_S = 0.5  # 500 ms
 PARENT_PROCESS_WATCH_INTERVAL = 10  # 10 s
 MAX_WORKERS = 64
 PYTHON_FILE_EXTENSIONS = ('.py', '.pyi')

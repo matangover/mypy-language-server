@@ -19,6 +19,7 @@ class Workspace(object):
     M_APPLY_EDIT = 'workspace/applyEdit'
     M_SHOW_MESSAGE = 'window/showMessage'
     M_REPORT_PROGRESS = 'mypyls/reportProgress'
+    M_CONFIGURATION = 'workspace/configuration'
 
     def __init__(self, root_uri, endpoint):
         self._root_uri = root_uri
@@ -73,6 +74,9 @@ class Workspace(object):
 
     def _create_document(self, doc_uri, source=None, version=None):
         return Document(doc_uri, source=source, version=version)
+
+    def get_configuration(self, items):
+        return self._endpoint.request(self.M_CONFIGURATION, {'items': items})
 
 
 class Document(object):

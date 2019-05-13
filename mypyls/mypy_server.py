@@ -31,10 +31,39 @@ def configuration_changed(config, workspace):
         return
 
     settings = config.settings()
+
+    if config.capabilities.get('workspace', {}).get('configuration'):
+        python_executable_future = workspace.get_configuration([{'section': 'python.pythonPath'}])
+        python_executable_future.add_done_callback(lambda future: got_python_executable(future, config, workspace))
+    else:
+        log.info('Client doesn\'t support workspace/configuration, not fetching pythonPath.')
+        start_server_and_analyze(config, workspace)
+
+def got_python_executable(python_executable_future, config, workspace):
+    python_executable = None
+    try:
+        python_executable_list = python_executable_future.result()
+        if python_executable_list and len(python_executable_list) == 1:
+            python_executable = python_executable_list[0]
+    except Exception:
+        log.exception('Error fetching python_executable:')
+    else:
+        python_executable = os.path.expanduser(python_executable)
+        python_executable = python_executable.replace('${workspaceFolder}', workspace.root_path)
+        log.info(f'Got python_executable from pythonPath: {python_executable}')
+        if not os.path.exists(python_executable):
+            log.info(f'python_executable does not exist, ignoring it.')
+            python_executable = None
+
+    start_server_and_analyze(config, workspace, python_executable)
+
+def start_server_and_analyze(config, workspace, python_executable=None):
     options = Options()
     options.check_untyped_defs = True
     options.follow_imports = 'error'
     options.use_fine_grained_cache = True
+    options.python_executable = python_executable
+
     stderr_stream = StringIO()
     config_file = settings.get('configFile')
     if config_file == '':
@@ -59,6 +88,7 @@ def configuration_changed(config, workspace):
         workspace.show_message(f"Cannot use follow_imports='{options.follow_imports}', using 'error' instead.")
         options.follow_imports = 'error'
 
+    log.info(f'python_executable after applying config: {options.python_executable}')
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
 
     mypy_check(workspace, config)
