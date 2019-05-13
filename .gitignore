@@ -109,3 +109,5 @@ ENV/
 
 # Merge orig files
 *.orig
+
+.mypy_cache/
