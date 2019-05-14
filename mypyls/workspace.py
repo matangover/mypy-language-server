@@ -26,7 +26,7 @@ class Workspace(object):
         self._endpoint = endpoint
         self._root_uri_scheme = uris.urlparse(self._root_uri)[0]
         self._root_path = uris.to_fs_path(self._root_uri)
-        self._docs = {}
+        self._docs = {} # type: dict
 
     @property
     def documents(self):

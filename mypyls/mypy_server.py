@@ -9,7 +9,7 @@ from mypy.dmypy_util import DEFAULT_STATUS_FILE
 from mypy.options import Options
 from mypy.main import parse_config_file
 from mypy.version import __version__ as mypy_version
-from typing import Set, Dict, Optional
+from typing import Set, Dict, Optional, List, cast
 
 from . import lsp
 from contextlib import redirect_stderr
@@ -18,7 +18,7 @@ from io import StringIO
 line_pattern = r"([^:]+):(?:(\d+):)?(?:(\d+):)? (\w+): (.*)"
 
 log = logging.getLogger(__name__)
-settings: Optional[Dict[str, object]] = None
+settings = None # type: Optional[Dict[str, object]]
 
 def configuration_changed(config, workspace):
     global settings
@@ -40,14 +40,15 @@ def configuration_changed(config, workspace):
         start_server_and_analyze(config, workspace)
 
 def got_python_executable(python_executable_future, config, workspace):
-    python_executable = None
+    python_executable = None # type: Optional[str]
     try:
         python_executable_list = python_executable_future.result()
         if python_executable_list and len(python_executable_list) == 1:
             python_executable = python_executable_list[0]
     except Exception:
         log.exception('Error fetching python_executable:')
-    else:
+
+    if python_executable:
         python_executable = os.path.expanduser(python_executable)
         python_executable = python_executable.replace('${workspaceFolder}', workspace.root_path)
         log.info(f'Got python_executable from pythonPath: {python_executable}')
@@ -58,6 +59,10 @@ def got_python_executable(python_executable_future, config, workspace):
     start_server_and_analyze(config, workspace, python_executable)
 
 def start_server_and_analyze(config, workspace, python_executable=None):
+    if settings is None:
+        log.error('Settings is None')
+        return
+
     options = Options()
     options.check_untyped_defs = True
     options.follow_imports = 'error'
@@ -97,6 +102,9 @@ def mypy_check(workspace, config):
     if not workspace.root_path:
         return
 
+    if settings is None:
+        return
+
     log.info('Checking mypy...')
     workspace.report_progress('$(gear~spin) mypy')
     try:
@@ -105,7 +113,7 @@ def mypy_check(workspace, config):
                 workspace.report_progress(f'$(gear~spin) mypy ({processed_targets})')
             workspace.mypy_server.status_callback = report_status
 
-        targets = settings.get('targets') or ['.']
+        targets = cast(List[str], settings.get('targets')) or ['.']
         targets = [os.path.join(workspace.root_path, target) for target in targets]
         log.info(f'Targets: {targets}')
         result = workspace.mypy_server.cmd_check(targets)
@@ -153,7 +161,7 @@ def parse_line(line):
 
 
 def parse_mypy_output(mypy_output):
-    diagnostics = defaultdict(list)
+    diagnostics = defaultdict(list) # type: Dict[str, List[dict]]
     for line in mypy_output.splitlines():
         path, diag = parse_line(line)
         if diag:

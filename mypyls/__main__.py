@@ -3,10 +3,12 @@ import argparse
 import json
 import logging
 import logging.config
+import logging.handlers
 import sys
 from .python_ls import start_io_lang_server, start_tcp_lang_server, PythonLanguageServer
 from contextlib import redirect_stdout
 import os
+from typing import cast, BinaryIO
 
 LOG_FORMAT = "%(asctime)s UTC - %(levelname)s - %(name)s - %(message)s"
 
@@ -84,7 +86,7 @@ def _binary_stdio():
             import msvcrt
             msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
             msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
-        stdin, stdout = sys.stdin, sys.stdout
+        stdin, stdout = cast(BinaryIO, sys.stdin), cast(BinaryIO, sys.stdout)
 
     return stdin, stdout
 
@@ -100,8 +102,8 @@ def _configure_logger(verbose=0, log_config=None, log_file=None):
         if log_file:
             log_handler = logging.handlers.RotatingFileHandler(
                 log_file, mode='a', maxBytes=50*1024*1024,
-                backupCount=10, encoding=None, delay=0
-            )
+                backupCount=10, encoding=None, delay=False
+            ) # type: logging.Handler
         else:
             log_handler = logging.StreamHandler()
         log_handler.setFormatter(formatter)

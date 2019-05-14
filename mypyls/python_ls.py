@@ -3,6 +3,7 @@ import logging
 import socketserver
 import threading
 import sys
+from typing import Optional, Any
 
 from pyls_jsonrpc.dispatchers import MethodDispatcher
 from pyls_jsonrpc.endpoint import Endpoint
@@ -24,7 +25,7 @@ CONFIG_FILEs = ('pycodestyle.cfg', 'setup.cfg', 'tox.ini', '.flake8')
 class _StreamHandlerWrapper(socketserver.StreamRequestHandler, object):
     """A wrapper class that is used to construct a custom handler class."""
 
-    delegate = None
+    delegate = None # type: Optional[Any]
 
     def setup(self):
         super(_StreamHandlerWrapper, self).setup()

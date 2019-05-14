@@ -11,7 +11,7 @@ class Config(object):
         self._init_opts = init_opts
         self._process_id = process_id
         self._capabilities = capabilities
-        self._settings = {}
+        self._settings = {} # type: dict
 
     @property
     def init_opts(self):
