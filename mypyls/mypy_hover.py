@@ -4,9 +4,10 @@ from mypy.nodes import (
     SymbolNode, TypeInfo, Node, Expression, ReturnStmt, NameExpr, SymbolTableNode, Var,
     AssignmentStmt, Context, RefExpr, FuncBase, MemberExpr, ImportBase
 )
-from typing import Optional
+from typing import Optional, Union
 from mypy.types import (
     Type, AnyType, TypeOfAny, CallableType, UnionType, NoneTyp, Instance, is_optional,
+    Overloaded,
 )
 from mypy.util import short_type
 from .mypy_definition import get_import_definition
@@ -20,18 +21,22 @@ def hover(workspace, document, position):
     if not fgmanager:
         return None
     hover = get_hover(fgmanager, document.path, position['line'], position['character'])
-    if hover:
-        return {
-            'contents': {
-                'kind': 'markdown',
-                'value': python_highlight(hover)
-            }
-        }
-    else:
+    if hover is None:
         return None
 
+    contents = {
+        'kind': 'markdown',
+    }
+    if isinstance(hover, str):
+        contents['value'] = python_highlight(hover)
+    else:
+        contents.update(hover)
 
-def get_hover(fgmanager, path, line, column) -> Optional[str]:
+    return {'contents': contents}
+    
+
+
+def get_hover(fgmanager, path, line, column) -> Union[dict, str, None]:
     # Columns are zero based in the AST, but rows are 1-based.
     line = line + 1
     node, mypy_file = mypy_utils.find_name_expr(fgmanager, path, line, column)
@@ -72,6 +77,15 @@ def get_hover(fgmanager, path, line, column) -> Optional[str]:
     if isinstance(def_node, FuncBase):
         type_str = ''
         node_type = fgmanager.manager.all_types.get(node) or def_node.type
+
+        if isinstance(node_type, Overloaded):
+            # TODO: Determine which overload is actually called using type checker.
+            overloads = node_type.items()
+            parts = [python_highlight(fullname(def_node))]
+            parts.append(f'{len(overloads)} overloads:')
+            parts.extend(python_highlight(type_to_string(overload)) for overload in overloads)
+            return {'value': '\n\n'.join(parts)}
+
         if node_type:
             type_str = type_to_string(node_type)
             if type_str.startswith('def '):
