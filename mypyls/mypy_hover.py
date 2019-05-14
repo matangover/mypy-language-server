@@ -11,6 +11,7 @@ from mypy.types import (
 )
 from mypy.util import short_type
 from .mypy_definition import get_import_definition
+from mypy.server.update import FineGrainedBuildManager
 from . import mypy_utils
 import re
 
@@ -36,7 +37,7 @@ def hover(workspace, document, position):
     
 
 
-def get_hover(fgmanager, path, line, column) -> Union[dict, str, None]:
+def get_hover(fgmanager: FineGrainedBuildManager, path, line, column) -> Union[dict, str, None]:
     # Columns are zero based in the AST, but rows are 1-based.
     line = line + 1
     node, mypy_file = mypy_utils.find_name_expr(fgmanager, path, line, column)
@@ -65,7 +66,8 @@ def get_hover(fgmanager, path, line, column) -> Union[dict, str, None]:
         return None
 
     if isinstance(def_node, Var):
-        var_type = 'Unknown' if def_node.type is None else type_to_string(def_node.type)
+        var_type = fgmanager.manager.all_types.get(node) or def_node.type
+        var_type_str = 'Unknown' if var_type is None else type_to_string(var_type)
         return f'{def_node.name()}: {var_type}'
 
     if isinstance(def_node, TypeInfo):
