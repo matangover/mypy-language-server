@@ -121,9 +121,9 @@ def mypy_check(workspace, config):
         if result['err']:
             log.info(f'mypy stderr:\n{result["err"]}')
             workspace.show_message(f'Error running mypy: {result["err"]}')
-        if result['out']:
-            log.info(f'mypy stdout:\n{result["out"]}')
-            publish_diagnostics(workspace, result['out'])
+
+        log.info(f'mypy stdout:\n{result["out"]}')
+        publish_diagnostics(workspace, result['out'])
     except Exception as e:
         log.exception('Error in mypy check:')
         workspace.show_message(f'Error running mypy: {e}')
