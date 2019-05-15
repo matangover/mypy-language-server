@@ -97,6 +97,9 @@ def get_hover(fgmanager: FineGrainedBuildManager, path, line, column) -> Union[d
     return None
 
 def python_highlight(value):
+    # Type variables get a backtick in their name, remove it as it screws up
+    # syntax highlighting.
+    value = value.replace('`', '_')
     return f'```python\n{value}\n```'
 
 def type_to_string(typ: Type) -> str:
