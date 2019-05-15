@@ -68,7 +68,7 @@ def get_hover(fgmanager: FineGrainedBuildManager, path, line, column) -> Union[d
     if isinstance(def_node, Var):
         var_type = fgmanager.manager.all_types.get(node) or def_node.type
         var_type_str = 'Unknown' if var_type is None else type_to_string(var_type)
-        return f'{def_node.name()}: {var_type}'
+        return f'{def_node.name()}: {var_type_str}'
 
     if isinstance(def_node, TypeInfo):
         return f'class {fullname(def_node)}'
