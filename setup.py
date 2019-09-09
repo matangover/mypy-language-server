@@ -9,7 +9,7 @@ with open(os.path.join(this_directory, 'README.md')) as f:
 
 setup(
     name='mypyls',
-    version='0.1',
+    version='0.2',
     description='Type checking and rich language features for Python using mypy.',
     long_description=long_description,
     long_description_content_type='text/markdown',
