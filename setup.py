@@ -1,15 +1,17 @@
 #!/usr/bin/env python
+import sys
 import os.path
 from setuptools import find_packages, setup
-
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md')) as f:
     long_description = f.read()
 
+sys.path.insert(0, this_directory)
+from mypyls.version import __version__
 
 setup(
     name='mypyls',
-    version='0.2',
+    version=__version__,
     description='Type checking and rich language features for Python using mypy.',
     long_description=long_description,
     long_description_content_type='text/markdown',
