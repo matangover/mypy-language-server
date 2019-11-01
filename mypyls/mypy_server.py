@@ -63,6 +63,9 @@ def start_server_and_analyze(config, workspace, python_executable=None):
         log.error('Settings is None')
         return
 
+    log.info(f'mypy version: {mypy_version}')
+    log.info(f'mypyls version: {mypy_version}')
+
     options = Options()
     options.check_untyped_defs = True
     options.follow_imports = 'error'
@@ -93,6 +96,10 @@ def start_server_and_analyze(config, workspace, python_executable=None):
         workspace.show_message(f"Cannot use follow_imports='{options.follow_imports}', using 'error' instead.")
         options.follow_imports = 'error'
 
+    if mypy_version > '0.720':
+        options.color_output = False
+        options.error_summary = False
+
     log.info(f'python_executable after applying config: {options.python_executable}')
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
 
@@ -116,7 +123,11 @@ def mypy_check(workspace, config):
         targets = cast(List[str], settings.get('targets')) or ['.']
         targets = [os.path.join(workspace.root_path, target) for target in targets]
         log.info(f'Targets: {targets}')
-        result = workspace.mypy_server.cmd_check(targets)
+        if mypy_version > '0.720':
+            # mypy 0.730 added is_tty and terminal_width
+            result = workspace.mypy_server.cmd_check(targets, False, 80)
+        else:
+            result = workspace.mypy_server.cmd_check(targets)
         log.info(f'mypy done, exit code {result["status"]}')
         if result['err']:
             log.info(f'mypy stderr:\n{result["err"]}')
