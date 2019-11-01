@@ -14,6 +14,7 @@ from typing import Set, Dict, Optional, List, cast
 from . import lsp
 from contextlib import redirect_stderr
 from io import StringIO
+from . import version as mypyls_version
 
 line_pattern = r"([^:]+):(?:(\d+):)?(?:(\d+):)? (\w+): (.*)"
 
@@ -64,7 +65,7 @@ def start_server_and_analyze(config, workspace, python_executable=None):
         return
 
     log.info(f'mypy version: {mypy_version}')
-    log.info(f'mypyls version: {mypy_version}')
+    log.info(f'mypyls version: {mypyls_version}')
 
     options = Options()
     options.check_untyped_defs = True
