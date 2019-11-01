@@ -14,7 +14,7 @@ from typing import Set, Dict, Optional, List, cast
 from . import lsp
 from contextlib import redirect_stderr
 from io import StringIO
-from . import version as mypyls_version
+from .version import __version__ as mypyls_version
 
 line_pattern = r"([^:]+):(?:(\d+):)?(?:(\d+):)? (\w+): (.*)"
 
