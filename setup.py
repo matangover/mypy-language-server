@@ -24,7 +24,7 @@ setup(
     ],
     extras_require={
         'default-mypy': [
-            'mypy==0.720'
+            'mypy==0.740'
         ],
         'patched-mypy': [
             # Cannot use zip archive because we must include the typeshed submodule.
