@@ -15,4 +15,4 @@ Mypy has a robust type checking engine that is focused on correctness. Other IDE
 ## License
 
 This project is made available under the MIT License.
-It is based on Palantir's [python-language-server](https://github.com/palantir/python-language-server) and uses [mypy](https://github.com/python/mypy>).
+It is based on Palantir's [python-language-server](https://github.com/palantir/python-language-server) and uses [mypy](https://github.com/python/mypy).
