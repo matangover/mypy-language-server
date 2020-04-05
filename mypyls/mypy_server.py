@@ -111,6 +111,7 @@ def start_server_and_analyze(config, workspace, python_executable=None):
     if mypy_version > '0.720':
         options.color_output = False
         options.error_summary = False
+        options.pretty = False
 
     log.info(f'python_executable after applying config: {options.python_executable}')
     workspace.mypy_server = Server(options, DEFAULT_STATUS_FILE)
