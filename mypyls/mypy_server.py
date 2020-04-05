@@ -80,7 +80,18 @@ def start_server_and_analyze(config, workspace, python_executable=None):
         config_file = None
     log.info(f'Trying to read mypy config file from {config_file or "default locations"}')
     with redirect_stderr(stderr_stream):
-        parse_config_file(options, config_file)
+        if mypy_version >= '0.770':
+            def set_strict_flags():
+                # The code to set all strict options using the 'strict' flag is in mypy.main.process_options,
+                # and we cannot access it from here, so we disable `strict = True` in the config file for now.
+                stderr_stream.write(
+                    "Setting 'strict' in the configuration file is not supported by mypy-vscode for now. "
+                    "The option will be ignored. You may set individual strict flags instead "
+                    "(see 'mypy -h' for the list of flags enabled in strict mode).")
+            parse_config_file(options, set_strict_flags, config_file)
+        else:
+            parse_config_file(options, config_file)
+
     stderr = stderr_stream.getvalue()
     if stderr:
         log.error(f'Error reading mypy config file:\n{stderr}')
