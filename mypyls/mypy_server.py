@@ -71,7 +71,8 @@ def start_server_and_analyze(config, workspace, python_executable=None):
     options.check_untyped_defs = True
     options.follow_imports = 'error'
     options.use_fine_grained_cache = True
-    options.python_executable = python_executable
+    if python_executable is not None:
+        options.python_executable = python_executable
 
     stderr_stream = StringIO()
     config_file = settings.get('configFile')
