@@ -1,16 +1,14 @@
 # Mypy Language Server
 
-Runs mypy on Python code to provide type checking, go to definition, and hover.
+Runs mypy on Python code to provide type checking.
 
 ## Installation
 
 Follow the installation instructions in [Mypy extension for VS Code](https://github.com/matangover/mypy-vscode/blob/master/README.md). Using the VS Code extension itself is not required -- the language server may be used with any editor that supports the Language Server Protocol.
 
-## Motivation
+## Experimental IDE features
 
-Why another language server for Python? There are already at least Palantir's python-language-server (uses jedi), pyright (uses analysis engine written in TypeScript), Microsoft's python-language-server (uses analysis engine written in C#), and PyCharm (does not provide language server conforming to Language Server Protocol; uses analysis engine written in Java).
-
-Mypy has a robust type checking engine that is focused on correctness. Other IDE tools use custom analysis engines and the provided language features do not always match mypy's analysis. In a future where type-annotated Python is more common, it would be useful to have mypy's robust analysis provide the basis for IDE features as 'one source truth'. This language server is a proof of concept for that, although it is currently quite hacky and uses private mypy APIs. The mypy team [might be working](https://github.com/palantir/python-language-server/issues/194#issuecomment-484134414) on an official integration in the future.
+Originally this language server was also an attempt to implement IDE features on top of mypy's analysis engine. A basic go-to-definition and hover implementation still exists. However, it is tied to internal mypy APIs and uses a forked version of mypy which is hard to maintain. I have abandoned this work because other language servers do a better job at implementing these IDE features for now. Mypy remains focused on its core task of type checking, as does this language server.
 
 ## License
 
