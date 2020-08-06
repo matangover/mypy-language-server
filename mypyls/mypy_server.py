@@ -69,7 +69,10 @@ def start_server_and_analyze(config, workspace, python_executable=None):
 
     options = Options()
     options.check_untyped_defs = True
-    options.follow_imports = 'error'
+    if mypy_version < '0.780':
+        # Before mypy 0.780, follow_imports must be either 'error' or 'skip' in the daemon.
+        # Starting in 0.780, the daemon supports the default follow_imports=normal.
+        options.follow_imports = 'error'
     options.use_fine_grained_cache = True
     if python_executable is not None:
         options.python_executable = python_executable
@@ -105,7 +108,7 @@ def start_server_and_analyze(config, workspace, python_executable=None):
             workspace.show_message(f'Mypy config file not found:\n{config_file}')
 
     options.show_column_numbers = True
-    if options.follow_imports not in ('error', 'skip'):
+    if mypy_version < '0.780' and options.follow_imports not in ('error', 'skip'):
         workspace.show_message(f"Cannot use follow_imports='{options.follow_imports}', using 'error' instead.")
         options.follow_imports = 'error'
 
@@ -168,15 +171,15 @@ def parse_line(line):
 
     path, lineno, offset, severity, msg = result.groups()
     lineno = int(lineno or 1)
-    offset = int(offset or 0)
+    offset = int(offset or 1)
 
     errno = lsp.DiagnosticSeverity.Error if severity == 'error' else lsp.DiagnosticSeverity.Information
     diag = {
         'source': 'mypy',
         'range': {
-            'start': {'line': lineno - 1, 'character': offset},
+            'start': {'line': lineno - 1, 'character': offset - 1},
             # There may be a better solution, but mypy does not provide end
-            'end': {'line': lineno - 1, 'character': offset}
+            'end': {'line': lineno - 1, 'character': offset - 1}
         },
         'message': msg,
         'severity': errno
